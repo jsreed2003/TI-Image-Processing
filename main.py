@@ -1,5 +1,6 @@
 # === FastAPI + IQA Backend Starter ===
-# Run with: uvicorn main:app --reload
+# Run with:     source .venv/bin/activate
+#               pip install uvicorn
 
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
