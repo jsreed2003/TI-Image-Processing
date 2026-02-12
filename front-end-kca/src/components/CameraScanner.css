@@ -1,0 +1,208 @@
+   .camera-container.camera-modal {
+    visibility: visible !important;
+  }
+  
+  .camera-container.camera-modal,
+  .camera-container.camera-modal * {
+    visibility: visible !important;
+  }
+  
+  /* ========================================
+     Camera Container
+     ======================================== */
+  .camera-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  /* Camera status */
+  .camera-status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(204, 0, 0, 0.9);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 12px;
+    z-index: 5;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  /* ========================================
+     Top Control Bar - TI Theme
+     ======================================== */
+  .top-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px 12px 20px;
+    background: #CC0000;
+    border-bottom: 3px solid #CC0000;
+    z-index: 100;
+    padding-top: env(safe-area-inset-top, 44px);
+  }
+  
+  .app-title {
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-size: 24px; /* Larger for emoji/symbols */
+    line-height: 1;
+  }
+  
+  .icon-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* ========================================
+     Leveling Icon
+     ======================================== */
+    .guide-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .crosshair-container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Base tick style */
+  .tick {
+    position: absolute;
+    background: #CC0000;
+    box-shadow: 0 0 10px rgba(204, 0, 0, 0.6);
+  }
+
+  /* Vertical ticks */
+  .tick.up,
+  .tick.down {
+    width: 4px;
+    height: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Horizontal ticks */
+  .tick.left,
+  .tick.right {
+    width: 12px;
+    height: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Positioning */
+  .tick.up {
+    top: 0;
+  }
+
+  .tick.down {
+    bottom: 0;
+  }
+
+  .tick.left {
+    left: 0;
+  }
+
+  .tick.right {
+    right: 0;
+  }
+
+  /* ========================================
+     Bottom Controls
+     ======================================== */
+  .bottom-controls {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  
+  .capture-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s;
+  }
+  
+  .capture-button:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  
+  .capture-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .capture-ring {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 5px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px whitesmoke;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+  
+  .capture-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  
+  .capture-button:active:not(:disabled) .capture-circle {
+    transform: scale(0.9);
+    background: white;
+  }

@@ -1,0 +1,13 @@
+{
+  "appId": "com.yourname.keystonecorrection",
+  "appName": "Keystone Correction",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "CameraPreview": {
+      "presentationStyle": "fullScreen"
+    }
+  }
+}

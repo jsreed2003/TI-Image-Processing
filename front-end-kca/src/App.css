@@ -1,0 +1,160 @@
+/* ========================================
+   CRITICAL: WebView Transparency for Camera
+   ======================================== */
+   body.camera-running {
+    visibility: hidden;
+    --background: transparent;
+    --ion-background-color: transparent;
+    background: transparent !important;
+  }
+  
+  .camera-modal {
+    visibility: visible;
+  }
+  
+  /* ========================================
+     Global Resets
+     ======================================== */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body, #root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .App {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+  }
+  
+  body {
+    background: black;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* ========================================
+     Results Screen
+     ======================================== */
+  .results-screen {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #CC0000 0%, #A00000 100%);
+    overflow-y: auto;
+    padding-top: 44px;
+  }
+  
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .results-header h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+  
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+  }
+  
+  .results-content {
+    padding: 20px;
+  }
+  
+  .results-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .results-section h3 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 18px;
+  }
+  
+  .image-preview {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0f0f0;
+  }
+  
+  .image-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .settings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .info-row:last-child {
+    border-bottom: none;
+  }
+  
+  .info-row .label {
+    color: #666;
+    font-weight: 500;
+  }
+  
+  .info-row .value {
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .placeholder-text {
+    color: #666;
+    line-height: 1.6;
+    font-size: 14px;
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #CC0000;
+  }
