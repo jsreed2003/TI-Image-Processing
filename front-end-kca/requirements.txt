@@ -1,0 +1,39 @@
+# Frontend Dependencies (Node.js / npm)
+# Install with: npm install --legacy-peer-deps
+
+# React Framework
+react@18.2.0
+react-dom@18.2.0
+
+# Capacitor (Mobile Wrapper)
+@capacitor/core@6.2.1
+@capacitor/ios@6.2.1
+@capacitor/cli@6.2.1
+@capacitor/camera@6.0.2
+
+# Camera Preview Plugin
+capacitor-camera-view@1.0.0
+
+# Build Tools
+vite@4.5.2
+@vitejs/plugin-react@4.2.1
+
+# Development Dependencies
+@types/react@18.2.43
+@types/react-dom@18.2.17
+
+# Node.js Version Requirement
+# Node.js: v18.13.0 (Required - do not use v20+)
+# npm: 8.19.2 or higher
+
+# Platform-Specific Requirements
+
+# iOS:
+# - macOS with Xcode 14+
+# - CocoaPods 1.11+
+# - iOS Deployment Target: 15.0+
+
+# Android:
+# - Android Studio Hedgehog+
+# - Android SDK 24+
+# - Gradle 7.4+
