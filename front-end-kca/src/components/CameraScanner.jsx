@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CameraView } from 'capacitor-camera-view';
 import './CameraScanner.css';
 
-const CameraScanner = ({ onCapture, onOpenSettings, onOpenInfo }) => {
+const CameraScanner = ({ onCapture, onOpenSettings, onOpenInfo, settings }) => {
   const [isCameraActive, setIsCameraActive] = useState(false);
 
   useEffect(() => {
@@ -86,12 +86,7 @@ const CameraScanner = ({ onCapture, onOpenSettings, onOpenInfo }) => {
       if (onCapture) {
         onCapture({
           image: result.photo, // Base64 string
-          settings: {
-            aspectRatio: '16:9',
-            chessboardCols: 9,
-            chessboardRows: 6,
-            squareSize: 30
-          }
+          settings,
         });
       }
       

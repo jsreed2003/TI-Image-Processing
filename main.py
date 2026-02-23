@@ -3,7 +3,7 @@ FastAPI Backend for Keystone Correction
 Provides REST API endpoints for corner detection and keystone correction
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import cv2
@@ -153,22 +153,26 @@ def findLineIntersection(line1, line2):
         return np.array([x, y])
 
 
-def detectCorners(img):
+def detectCorners(img, pattern_size=None):
     """
     Detect the four outer corners of the projector's output.
-    
+
     Args:
         img: BGR image (numpy array)
-    
+        pattern_size: (cols, rows) inner corner count. Defaults to PATTERN_SIZE constant.
+
     Returns:
         corners: List of 4 corner coordinates [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
                  ordered as: top-left, top-right, bottom-right, bottom-left
     """
+    if pattern_size is None:
+        pattern_size = PATTERN_SIZE
+
     # Convert to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
+
     # Find chessboard corners
-    ret, corners = cv2.findChessboardCorners(gray, PATTERN_SIZE, None)
+    ret, corners = cv2.findChessboardCorners(gray, pattern_size, None)
     
     if not ret:
         raise ValueError("Could not find chessboard pattern in image")
@@ -178,7 +182,7 @@ def detectCorners(img):
     corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
     
     # Reshape to 2D array
-    corners_2d = corners.reshape(PATTERN_SIZE[1], PATTERN_SIZE[0], 2)
+    corners_2d = corners.reshape(pattern_size[1], pattern_size[0], 2)
     
     # Determine top-left and rotate array
     top_left_idx = getTopLeft(corners_2d)
@@ -424,13 +428,21 @@ async def health():
 
 
 @app.post("/api/detect_corners", response_model=CornerResponse)
-async def detect_corners_endpoint(file: UploadFile = File(...)):
+async def detect_corners_endpoint(
+    file: UploadFile = File(...),
+    cols: int = Form(8),
+    rows: int = Form(8),
+    aspect_ratio: float = Form(16 / 9),
+):
     """
     Detect corners and calculate keystone correction parameters.
-    
+
     Args:
         file: Image file of projector output (JPEG/PNG)
-    
+        cols: Number of inner corners horizontally (default 8)
+        rows: Number of inner corners vertically (default 8)
+        aspect_ratio: Desired output aspect ratio as a decimal (default 1.777 = 16/9)
+
     Returns:
         JSON with original corners, optimal corners, and correction parameters
     """
@@ -439,19 +451,19 @@ async def detect_corners_endpoint(file: UploadFile = File(...)):
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
+
         if img is None:
             raise HTTPException(status_code=400, detail="Invalid image file")
-        
-        logger.info(f"Processing image of size: {img.shape}")
-        
+
+        logger.info(f"Processing image of size: {img.shape}, pattern: ({cols}x{rows}), aspect: {aspect_ratio:.3f}")
+
         # Step 1: Detect corners
         logger.info("Detecting corners...")
-        original_corners = detectCorners(img)
-        
+        original_corners = detectCorners(img, pattern_size=(cols, rows))
+
         # Step 2: Find optimal rectangle
         logger.info("Finding optimal rectangle...")
-        optimal_corners = findBiggestRectangle(original_corners)
+        optimal_corners = findBiggestRectangle(original_corners, aspect_ratio=aspect_ratio)
         
         # Step 3: Calculate homography (optional, for input image transformation)
         # optimal_input_corners = calculateHomography(original_corners, optimal_corners)

@@ -2,43 +2,65 @@ import { useState } from 'react';
 import CameraScanner from './components/CameraScanner';
 import Settings from './components/Settings';
 import Info from './components/Info';
+import { detectCorners } from './api';
 import './App.css';
+
+const DEFAULT_SETTINGS = {
+  aspectRatio: '16:9',
+  chessboardCols: 9,
+  chessboardRows: 6,
+  squareSize: 30,
+};
 
 function App() {
   const [capturedData, setCapturedData] = useState(null);
   const [currentView, setCurrentView] = useState('camera'); // 'camera', 'settings', 'info', 'results'
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [corners, setCorners] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleCapture = (data) => {
-    console.log('Captured data:', {
-      imageLength: data.image.length,
-      settings: data.settings
-    });
-    
+  const handleCapture = async (data) => {
     setCapturedData(data);
+    setCorners(null);
+    setError(null);
     setCurrentView('results');
+    setLoading(true);
+
+    try {
+      const result = await detectCorners(data.image, data.settings);
+      setCorners(result);
+    } catch (err) {
+      console.error('Corner detection error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOpenSettings = () => {
-    setCurrentView('settings');
+  const handleSaveSettings = (newSettings) => {
+    setSettings(newSettings);
   };
 
-  const handleOpenInfo = () => {
-    setCurrentView('info');
-  };
+  const handleOpenSettings = () => setCurrentView('settings');
+  const handleOpenInfo = () => setCurrentView('info');
 
   const handleBackToCamera = () => {
     setCurrentView('camera');
     setCapturedData(null);
+    setCorners(null);
+    setError(null);
   };
 
   // Camera View
   if (currentView === 'camera') {
     return (
       <div className="App">
-        <CameraScanner 
+        <CameraScanner
           onCapture={handleCapture}
           onOpenSettings={handleOpenSettings}
           onOpenInfo={handleOpenInfo}
+          settings={settings}
         />
       </div>
     );
@@ -46,7 +68,7 @@ function App() {
 
   // Settings Page
   if (currentView === 'settings') {
-    return <Settings onBack={handleBackToCamera} />;
+    return <Settings onBack={handleBackToCamera} settings={settings} onSave={handleSaveSettings} />;
   }
 
   // Info Page
@@ -56,6 +78,8 @@ function App() {
 
   // Results Page
   if (currentView === 'results' && capturedData) {
+    const LABELS = ['Top-left', 'Top-right', 'Bottom-right', 'Bottom-left'];
+
     return (
       <div className="results-screen">
         <div className="results-header">
@@ -96,13 +120,42 @@ function App() {
           </div>
 
           <div className="results-section">
-            <h3>📐 Next Steps</h3>
-            <p className="placeholder-text">
-              Corner coordinates will be calculated here once Jackson completes backend and integration is done.
-              <br/><br/>
-              Expected output: Top-left, Top-right, Bottom-left, Bottom-right corner positions.
-            </p>
+            <h3>📐 Detected Corners</h3>
+            {loading && <p className="placeholder-text">Analyzing image...</p>}
+            {error && (
+              <p className="placeholder-text" style={{color: '#e05a5a', whiteSpace: 'pre-line'}}>
+                {error}
+              </p>
+            )}
+            {corners && (
+              <div className="settings-info">
+                {LABELS.map((label, i) => (
+                  <div className="info-row" key={label}>
+                    <span className="label">{label}:</span>
+                    <span className="value">
+                      ({corners.originalCorners[i][0].toFixed(0)}, {corners.originalCorners[i][1].toFixed(0)})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          {corners && (
+            <div className="results-section">
+              <h3>Optimal Rectangle</h3>
+              <div className="settings-info">
+                {LABELS.map((label, i) => (
+                  <div className="info-row" key={label}>
+                    <span className="label">{label}:</span>
+                    <span className="value">
+                      ({corners.optimalCorners[i][0].toFixed(0)}, {corners.optimalCorners[i][1].toFixed(0)})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
