@@ -47,15 +47,11 @@ class HealthResponse(BaseModel):
     status: str
     message: str
 
-# Constants (from your design document)
+# Constants
 PATTERN_SIZE = (8, 8)  # Chessboard pattern: 8 columns x 8 rows
 INPUT_IMAGE_WIDTH = 3829
 INPUT_IMAGE_HEIGHT = 2159
 
-# ============================================================================
-# YOUR EXISTING ALGORITHM CODE
-# (Copy your functions from the Python notebook here)
-# ============================================================================
 
 def getTopLeft(corners_2d):
     """
