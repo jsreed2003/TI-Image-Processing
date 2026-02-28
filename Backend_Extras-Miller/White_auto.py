@@ -140,37 +140,3 @@ def draw_corners(img_bgr: np.ndarray, corners_tl_tr_br_bl: List[List[float]], ra
     return out
 
 
-# -----------------------------------------------------------------------------
-# Optional local test harness (kept OUT of backend logic)
-# -----------------------------------------------------------------------------
-if __name__ == "__main__":
-    img_path = "new_white_img.jpg"
-    img = cv2.imread(img_path)
-
-    if img is None:
-        print(f"FAILED TO LOAD {img_path}")
-        raise SystemExit(1)
-
-    try:
-        corners = detect_white_screen_corners(img)
-
-        print("\n===== DETECTED CORNER COORDINATES =====")
-        print(f"TL: ({corners[0][0]}, {corners[0][1]})")
-        print(f"TR: ({corners[1][0]}, {corners[1][1]})")
-        print(f"BR: ({corners[2][0]}, {corners[2][1]})")
-        print(f"BL: ({corners[3][0]}, {corners[3][1]})")
-        print("========================================\n")
-
-        debug = draw_corners(img, corners)
-        cv2.imshow("Detected Corners", debug)
-        cv2.waitKey(0)
-
-        warped = warp_to_1920x1080(img, corners)
-        cv2.imshow("Warped 1920x1080", warped)
-        cv2.waitKey(0)
-
-    except ValueError as e:
-        print(str(e))
-
-    finally:
-        cv2.destroyAllWindows()
