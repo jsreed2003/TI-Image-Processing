@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import List
 
 
 def order_points(pts: np.ndarray) -> np.ndarray:
