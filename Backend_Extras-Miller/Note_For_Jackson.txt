@@ -4,7 +4,7 @@ Author: William Miller
 
 Jackson —
 
-The file WHite_auto.py contains the white-image (non-chessboard) screen detection pipeline.
+The file White_auto.py contains the white-image (non-chessboard) screen detection pipeline.
 
 ⚠️ HOW TO USE IN main.py:
 
