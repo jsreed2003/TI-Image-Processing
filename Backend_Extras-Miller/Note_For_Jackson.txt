@@ -1,0 +1,41 @@
+"""
+WHITE SCREEN DETECTION MODULE
+Author: William Miller
+
+Jackson —
+
+The file WHite_auto.py contains the white-image (non-chessboard) screen detection pipeline.
+
+⚠️ HOW TO USE IN main.py:
+
+1) Make sure this file is inside a folder without hyphens.
+   Example recommended structure:
+
+   project_root/
+       main.py
+       Backend_Extras_Miller/
+           White_auto.py
+
+2) Import it at the top of main.py:
+
+       from Backend_Extras_Miller.White_auto import detect_white_screen_corners
+
+3) Inside your endpoint, replace:
+
+       original_corners = detectCorners(img)
+
+   with:
+
+       original_corners = detect_white_screen_corners(img)
+
+The function returns corners ordered as:
+    [TL, TR, BR, BL]
+
+Format:
+    [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+
+The section under:
+    if __name__ == "__main__":
+
+is ONLY for local testing and will NOT run when imported into FastAPI.
+"""
