@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from typing import List, Optional, Tuple
 
 
 def order_points(pts: np.ndarray) -> np.ndarray:
@@ -14,8 +15,8 @@ def order_points(pts: np.ndarray) -> np.ndarray:
     s = pts[:, 0] + pts[:, 1]          # x + y
     d = pts[:, 1] - pts[:, 0]          # y - x
 
-    tl_idx = np.argmin(s)
-    br_idx = np.argmax(s)
+    tl_idx = int(np.argmin(s))
+    br_idx = int(np.argmax(s))
 
     # remaining two indices
     all_idx = np.array([0, 1, 2, 3])
@@ -23,57 +24,84 @@ def order_points(pts: np.ndarray) -> np.ndarray:
 
     # smaller (y - x) is TR, other is BL
     if d[remain[0]] < d[remain[1]]:
-        tr_idx = remain[0]
-        bl_idx = remain[1]
+        tr_idx = int(remain[0])
+        bl_idx = int(remain[1])
     else:
-        tr_idx = remain[1]
-        bl_idx = remain[0]
+        tr_idx = int(remain[1])
+        bl_idx = int(remain[0])
 
-    ordered = np.array([pts[tl_idx], pts[tr_idx], pts[br_idx], pts[bl_idx]], dtype=np.float32)
+    ordered = np.array(
+        [pts[tl_idx], pts[tr_idx], pts[br_idx], pts[bl_idx]],
+        dtype=np.float32
+    )
     return ordered
 
 
-def main():
-    img_path = "new_white_img.jpg"
-    img = cv2.imread(img_path)
+def detect_white_screen_corners(
+    img_bgr: np.ndarray,
+    adaptive_block_size: int = 75,
+    adaptive_C: int = -10,
+    blur_ksize: int = 51,
+    diff_thresh: int = 20,
+    close_ksize: int = 25,
+    approx_eps_frac: float = 0.02
+) -> List[List[float]]:
+    """
+    Detect the 4 outer corners of a white/bright screen region.
+    Returns corners ordered TL, TR, BR, BL as [[x,y], ...].
 
-    if img is None:
-        print(f"FAILED TO LOAD {img_path}")
-        return -1
+    Raises:
+        ValueError: if no 4-point screen contour is detected.
+    """
+    if img_bgr is None or img_bgr.size == 0:
+        raise ValueError("Empty/invalid image input")
 
     # STEP 1 — Grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
 
     # STEP 2 — Adaptive threshold (bright regions)
+    # block size must be odd and >= 3
+    if adaptive_block_size < 3:
+        adaptive_block_size = 3
+    if adaptive_block_size % 2 == 0:
+        adaptive_block_size += 1
+
     thresh = cv2.adaptiveThreshold(
         gray, 255,
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         cv2.THRESH_BINARY,
-        75, -10
+        adaptive_block_size,
+        adaptive_C
     )
 
     # STEP 3 — Low variance mask (uniform areas)
-    blur_img = cv2.GaussianBlur(gray, (51, 51), 0)
+    # blur kernel must be odd and >= 3
+    if blur_ksize < 3:
+        blur_ksize = 3
+    if blur_ksize % 2 == 0:
+        blur_ksize += 1
+
+    blur_img = cv2.GaussianBlur(gray, (blur_ksize, blur_ksize), 0)
 
     diff = cv2.absdiff(gray, blur_img)
-    _, diff = cv2.threshold(diff, 20, 255, cv2.THRESH_BINARY_INV)
+    _, diff = cv2.threshold(diff, diff_thresh, 255, cv2.THRESH_BINARY_INV)
 
     # Combine brightness + uniformity mask
     combined = cv2.bitwise_and(thresh, diff)
 
-    # STEP 4 — Morph close
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
+    # STEP 4 — Morph close (fill holes)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (close_ksize, close_ksize))
     combined = cv2.morphologyEx(combined, cv2.MORPH_CLOSE, kernel)
 
-    # STEP 5 — Find contours
-    contours, _hier = cv2.findContours(combined, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # STEP 5 — Find contours and choose biggest 4-point polygon
+    contours, _ = cv2.findContours(combined, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    max_area = 0.0
     best_quad = None
+    max_area = 0.0
 
     for c in contours:
         perimeter = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.02 * perimeter, True)
+        approx = cv2.approxPolyDP(c, approx_eps_frac * perimeter, True)
 
         if len(approx) == 4:
             area = cv2.contourArea(approx)
@@ -82,46 +110,67 @@ def main():
                 best_quad = approx
 
     if best_quad is None:
-        print("No screen detected.")
-        return -1
+        raise ValueError("No screen detected (no 4-point contour found).")
 
-    # Convert to (4,2) float points
     pts = best_quad.reshape(4, 2).astype(np.float32)
-
-    # ORDER POINTS: TL, TR, BR, BL
     ordered = order_points(pts)
 
-    # Print ordered corners
-    print("\n===== DETECTED CORNER COORDINATES =====")
-    print(f"TL: ({ordered[0][0]}, {ordered[0][1]})")
-    print(f"TR: ({ordered[1][0]}, {ordered[1][1]})")
-    print(f"BR: ({ordered[2][0]}, {ordered[2][1]})")
-    print(f"BL: ({ordered[3][0]}, {ordered[3][1]})")
-    print("========================================\n")
-
-    # STEP 6 — Draw detected corners
-    debug = img.copy()
-    for (x, y) in ordered:
-        cv2.circle(debug, (int(x), int(y)), 20, (0, 0, 255), -1)
-
-    cv2.imshow("Detected Corners", debug)
-    cv2.waitKey(0)
-
-    # STEP 7 — Warp to 1920×1080
-    dst_pts = np.array([
-        [0, 0], [1919, 0],
-        [1919, 1079], [0, 1079]
-    ], dtype=np.float32)
-
-    H = cv2.getPerspectiveTransform(ordered, dst_pts)
-    warped = cv2.warpPerspective(img, H, (1920, 1080))
-
-    cv2.imshow("Warped 1920x1080", warped)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    return 0
+    return ordered.tolist()
 
 
+def warp_to_1920x1080(img_bgr: np.ndarray, corners_tl_tr_br_bl: List[List[float]]) -> np.ndarray:
+    """
+    Warp the input image into a 1920x1080 rectangle using TL,TR,BR,BL corners.
+    """
+    src = np.array(corners_tl_tr_br_bl, dtype=np.float32)
+    dst = np.array([[0, 0], [1919, 0], [1919, 1079], [0, 1079]], dtype=np.float32)
+
+    H = cv2.getPerspectiveTransform(src, dst)
+    warped = cv2.warpPerspective(img_bgr, H, (1920, 1080))
+    return warped
+
+
+def draw_corners(img_bgr: np.ndarray, corners_tl_tr_br_bl: List[List[float]], radius: int = 20) -> np.ndarray:
+    """
+    Debug helper: draw red circles on the detected corners.
+    """
+    out = img_bgr.copy()
+    for x, y in corners_tl_tr_br_bl:
+        cv2.circle(out, (int(x), int(y)), radius, (0, 0, 255), -1)
+    return out
+
+
+# -----------------------------------------------------------------------------
+# Optional local test harness (kept OUT of backend logic)
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    raise SystemExit(main())
+    img_path = "new_white_img.jpg"
+    img = cv2.imread(img_path)
+
+    if img is None:
+        print(f"FAILED TO LOAD {img_path}")
+        raise SystemExit(1)
+
+    try:
+        corners = detect_white_screen_corners(img)
+
+        print("\n===== DETECTED CORNER COORDINATES =====")
+        print(f"TL: ({corners[0][0]}, {corners[0][1]})")
+        print(f"TR: ({corners[1][0]}, {corners[1][1]})")
+        print(f"BR: ({corners[2][0]}, {corners[2][1]})")
+        print(f"BL: ({corners[3][0]}, {corners[3][1]})")
+        print("========================================\n")
+
+        debug = draw_corners(img, corners)
+        cv2.imshow("Detected Corners", debug)
+        cv2.waitKey(0)
+
+        warped = warp_to_1920x1080(img, corners)
+        cv2.imshow("Warped 1920x1080", warped)
+        cv2.waitKey(0)
+
+    except ValueError as e:
+        print(str(e))
+
+    finally:
+        cv2.destroyAllWindows()
