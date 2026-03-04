@@ -15,8 +15,8 @@ def order_points(pts: np.ndarray) -> np.ndarray:
     s = pts[:, 0] + pts[:, 1]          # x + y
     d = pts[:, 1] - pts[:, 0]          # y - x
 
-    tl_idx = int(np.argmin(s))
-    br_idx = int(np.argmax(s))
+    tl_idx = int(np.argmin(s)) # Smallest sum (TL)
+    br_idx = int(np.argmax(s)) # largest sum (BR)
 
     # remaining two indices
     all_idx = np.array([0, 1, 2, 3])
@@ -37,6 +37,23 @@ def order_points(pts: np.ndarray) -> np.ndarray:
     return ordered
 
 
+"""Example:
+     
+           (0, 0) -----------------------   (1919, 0)
+             |                                  |
+             |                                  |
+             |                                  |
+        (0, 1079) ----------------------- (1919, 1079)
+
+         (349, 199) ------------------------ (2545, 409)
+             |                                  |
+             |                                  |
+             |                                  |
+        (444, 1475) ------------------------- (2525, 1437)
+*/
+"""
+
+# Detect the 4 corners of the white image through bright contrast:
 def detect_white_screen_corners(
     img_bgr: np.ndarray,
     adaptive_block_size: int = 75,
@@ -46,21 +63,17 @@ def detect_white_screen_corners(
     close_ksize: int = 25,
     approx_eps_frac: float = 0.02
 ) -> List[List[float]]:
-    """
-    Detect the 4 outer corners of a white/bright screen region.
-    Returns corners ordered TL, TR, BR, BL as [[x,y], ...].
-
-    Raises:
-        ValueError: if no 4-point screen contour is detected.
-    """
+    
+    # If no 4 point screen contour is detected:
     if img_bgr is None or img_bgr.size == 0:
         raise ValueError("Empty/invalid image input")
 
-    # STEP 1 — Grayscale
+    # STEP 1 — Grayscale (Removes color completely and keeps only brightness) (RGB -> grayscale)
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
 
     # STEP 2 — Adaptive threshold (bright regions)
     # block size must be odd and >= 3
+    # Odd to detect the nearby pixels from the center when computing the threshold
     if adaptive_block_size < 3:
         adaptive_block_size = 3
     if adaptive_block_size % 2 == 0:
@@ -74,19 +87,25 @@ def detect_white_screen_corners(
         adaptive_C
     )
 
-    # STEP 3 — Low variance mask (uniform areas)
+    # STEP 3 — Low variance mask (uniform areas) Finds the smooth/constant brightness:
     # blur kernel must be odd and >= 3
     if blur_ksize < 3:
         blur_ksize = 3
     if blur_ksize % 2 == 0:
         blur_ksize += 1
 
-    blur_img = cv2.GaussianBlur(gray, (blur_ksize, blur_ksize), 0)
+    # Smooth image with Gaussian blur so uniform regions remain similar while noise is reduced
+    blur_img = cv2.GaussianBlur(gray, (blur_ksize, blur_ksize), 0) 
 
-    diff = cv2.absdiff(gray, blur_img)
-    _, diff = cv2.threshold(diff, diff_thresh, 255, cv2.THRESH_BINARY_INV)
+    # Gets the difference to find the smooth vs textured regions of the white image
+    diff = cv2.absdiff(gray, blur_img) 
+
+    # Used to keep smooth areas
+    _, diff = cv2.threshold(diff, diff_thresh, 255, cv2.THRESH_BINARY_INV) # returns threshold value used and resulting thresholded image
 
     # Combine brightness + uniformity mask
+    # white = bright + smooth regions (binary mask 255 (1 for ususal cases outside of OpenCV))
+    # black = everything else (binary mask 0)
     combined = cv2.bitwise_and(thresh, diff)
 
     # STEP 4 — Morph close (fill holes)
@@ -101,9 +120,9 @@ def detect_white_screen_corners(
 
     for c in contours:
         perimeter = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, approx_eps_frac * perimeter, True)
+        approx = cv2.approxPolyDP(c, approx_eps_frac * perimeter, True) # reduces points in the ocntur
 
-        if len(approx) == 4:
+        if len(approx) == 4: # Finds corners and area inside the shape
             area = cv2.contourArea(approx)
             if area > max_area:
                 max_area = area
@@ -112,7 +131,7 @@ def detect_white_screen_corners(
     if best_quad is None:
         raise ValueError("No screen detected (no 4-point contour found).")
 
-    pts = best_quad.reshape(4, 2).astype(np.float32)
+    pts = best_quad.reshape(4, 2).astype(np.float32) # gets the points from the max white contrast area
     ordered = order_points(pts)
 
     return ordered.tolist()
@@ -129,14 +148,9 @@ def warp_to_1920x1080(img_bgr: np.ndarray, corners_tl_tr_br_bl: List[List[float]
     warped = cv2.warpPerspective(img_bgr, H, (1920, 1080))
     return warped
 
-
+# Draw the red circles on the detected corners
 def draw_corners(img_bgr: np.ndarray, corners_tl_tr_br_bl: List[List[float]], radius: int = 20) -> np.ndarray:
-    """
-    Debug helper: draw red circles on the detected corners.
-    """
     out = img_bgr.copy()
     for x, y in corners_tl_tr_br_bl:
         cv2.circle(out, (int(x), int(y)), radius, (0, 0, 255), -1)
     return out
-
-
