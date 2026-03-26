@@ -156,6 +156,21 @@ function App() {
               </div>
             </div>
           )}
+          {corners && corners.optimalInputCorners && (
+            <div className="results-section">
+              <h3>Optimal Input Corners</h3>
+              <div className="settings-info">
+                {LABELS.map((label, i) => (
+                  <div className="info-row" key={label}>
+                    <span className="label">{label}:</span>
+                    <span className="value">
+                      ({corners.optimalInputCorners[i][0].toFixed(0)}, {corners.optimalInputCorners[i][1].toFixed(0)})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

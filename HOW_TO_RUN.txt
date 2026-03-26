@@ -1,0 +1,49 @@
+HOW TO RUN - Keystone Correction App
+=====================================
+
+REQUIREMENTS
+------------
+- Python 3.x with virtual environment (.venv)
+- Node.js + npm
+- Xcode (for iOS deployment)
+- iPhone on the same WiFi as your Mac
+
+STEP 1: Find your Mac's local IP
+---------------------------------
+Run in terminal:
+    ipconfig getifaddr en0
+
+Note the IP (e.g. 10.9.131.31) — you'll need it below.
+
+STEP 2: Update the API URL
+---------------------------
+In front-end-kca/src/api.js, set:
+    const API_URL = 'http://<your-ip>:8000';
+
+STEP 3: Start the backend server
+----------------------------------
+From the project root:
+    source .venv/bin/activate
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+Server will be available at http://<your-ip>:8000
+Logs (including timing and corner output) print here.
+
+STEP 4: Build and sync the frontend
+-------------------------------------
+    cd front-end-kca
+    npm run build
+    npx cap sync ios
+
+STEP 5: Run on iPhone via Xcode
+---------------------------------
+1. Open front-end-kca/ios/App/App.xcworkspace in Xcode
+2. Select your iPhone as the target device
+3. Press Run (Cmd+R)
+
+NOTES
+-----
+- Mac and iPhone must be on the same WiFi network
+- Repeat Steps 2–5 whenever you change frontend code
+- Backend hot-reloads automatically when main.py changes
+- Default chessboard pattern: 7 cols x 7 rows (inner corners)

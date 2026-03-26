@@ -60,6 +60,7 @@ export const detectCorners = async (base64Image, settings = {}) => {
   return {
     originalCorners: data.originalCorners,
     optimalCorners: data.optimalCorners,
+    optimalInputCorners: data.optimalInputCorners,
     imageWidth: data.imageWidth,
     imageHeight: data.imageHeight,
   };

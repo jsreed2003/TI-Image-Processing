@@ -56,6 +56,7 @@ app.add_middleware(
 class CornerResponse(BaseModel):
     originalCorners: List[List[float]]
     optimalCorners: List[List[float]]
+    optimalInputCorners: List[List[float]]
     success: bool
     message: str
     imageWidth: int
@@ -483,16 +484,18 @@ async def detect_corners_endpoint(
         optimal_corners = findBiggestRectangle(original_corners, aspect_ratio=aspect_ratio)
         logger.info(f"Optimal rectangle took {time.perf_counter() - t1:.2f}s")
 
-        # Step 3: Calculate homography (optional, for input image transformation)
-        # optimal_input_corners = calculateHomography(original_corners, optimal_corners)
+        # Step 3: Calculate homography
+        optimal_input_corners = calculateHomography(original_corners, optimal_corners)
 
         mce = normalized_average_distance(optimal_corners, original_corners)
         logger.info(f"Mean corner error: {mce:.4f}")
+        logger.info(f"Optimal input corners: {[[round(v, 1) for v in pt] for pt in optimal_input_corners]}")
         logger.info("Corner detection successful")
         
         return {
             "originalCorners": original_corners,
             "optimalCorners": optimal_corners,
+            "optimalInputCorners": optimal_input_corners,
             "success": True,
             "message": "Corner detection successful",
             "imageWidth": img.shape[1],
