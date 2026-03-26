@@ -13,6 +13,24 @@ import io
 from typing import List, Tuple, Dict
 from pydantic import BaseModel
 import logging
+import time
+import math
+
+
+def _distance(p1, p2):
+    return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+
+
+def _diagonal_length(rect):
+    return _distance(rect[0], rect[2])
+
+
+def normalized_average_distance(ideal, calculated):
+    distances = [_distance(ideal[i], calculated[i]) for i in range(4) if _distance(ideal[i], calculated[i]) > 0]
+    diag = _diagonal_length(ideal)
+    if diag == 0:
+        raise ValueError("Ideal rectangle diagonal cannot be zero.")
+    return (sum(distances) / len(distances)) / diag
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -455,15 +473,21 @@ async def detect_corners_endpoint(
 
         # Step 1: Detect corners
         logger.info("Detecting corners...")
+        t0 = time.perf_counter()
         original_corners = detectCorners(img, pattern_size=(cols, rows))
+        logger.info(f"Corner detection took {time.perf_counter() - t0:.2f}s")
 
         # Step 2: Find optimal rectangle
         logger.info("Finding optimal rectangle...")
+        t1 = time.perf_counter()
         optimal_corners = findBiggestRectangle(original_corners, aspect_ratio=aspect_ratio)
-        
+        logger.info(f"Optimal rectangle took {time.perf_counter() - t1:.2f}s")
+
         # Step 3: Calculate homography (optional, for input image transformation)
         # optimal_input_corners = calculateHomography(original_corners, optimal_corners)
-        
+
+        mce = normalized_average_distance(optimal_corners, original_corners)
+        logger.info(f"Mean corner error: {mce:.4f}")
         logger.info("Corner detection successful")
         
         return {
