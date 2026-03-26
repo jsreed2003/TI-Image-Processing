@@ -22,20 +22,20 @@
 - [ ] Run `npm install` in project directory
 - [ ] Try running the app on emulator
 
-#### iOS Developers (Karrie):
+#### iOS Developers:
 - [ ] Install Xcode from App Store
 - [ ] Run `pod install` in ios folder
 - [ ] Test on iOS simulator
 - [ ] Test on physical iPhone if available
 
-#### Android Developers (Jackson):
+#### Android Developers:
 - [ ] Install Android Studio
 - [ ] Set up Android SDK
 - [ ] Create Android emulator
 - [ ] Test on Android emulator
 - [ ] Test on physical Android phone if available
 
-#### Algorithm Team (William & Marc):
+#### Algorithm Team:
 - [ ] Review current Python code
 - [ ] Research opencv.js options
 - [ ] Plan algorithm porting strategy

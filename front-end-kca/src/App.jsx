@@ -7,8 +7,8 @@ import './App.css';
 
 const DEFAULT_SETTINGS = {
   aspectRatio: '16:9',
-  chessboardCols: 9,
-  chessboardRows: 6,
+  chessboardCols: 7,
+  chessboardRows: 7,
   squareSize: 30,
 };
 
