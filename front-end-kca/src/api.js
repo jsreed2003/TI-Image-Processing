@@ -6,7 +6,7 @@
  * - Same-machine browser dev: 'http://localhost:8000'
  * - iOS/Android device on same WiFi: 'http://<your-machine-ip>:8000'
  */
-const API_URL = 'http://10.9.131.31:8000';
+const API_URL = 'http://10.9.131.86:8000';
 
 function base64ToBlob(base64, mimeType = 'image/jpeg') {
   const byteString = atob(base64);

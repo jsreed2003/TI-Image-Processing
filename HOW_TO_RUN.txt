@@ -22,9 +22,14 @@ In front-end-kca/src/api.js, set:
 
 STEP 3: Start the backend server
 ----------------------------------
-From the project root:
+IMPORTANT: Run from the project root (TI-Image-Processing/), not a subdirectory.
+
+    cd /path/to/TI-Image-Processing
     source .venv/bin/activate
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+Common error: "Could not import module 'main'" means uvicorn was run
+from the wrong directory.
 
 Server will be available at http://<your-ip>:8000
 Logs (including timing and corner output) print here.
@@ -40,6 +45,22 @@ STEP 5: Run on iPhone via Xcode
 1. Open front-end-kca/ios/App/App.xcworkspace in Xcode
 2. Select your iPhone as the target device
 3. Press Run (Cmd+R)
+
+VIEWING SERVER LOGS
+--------------------
+Logs print live in the terminal where uvicorn is running.
+
+To save logs to a file while also watching them:
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload 2>&1 | tee server.log
+
+To watch a saved log file from another terminal tab:
+    tail -f server.log
+
+Log output includes:
+- Incoming requests (method, path, status code)
+- Timing reports (processing duration)
+- Detected corner coordinates
+- Any errors or exceptions
 
 NOTES
 -----
