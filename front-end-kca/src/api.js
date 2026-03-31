@@ -2,11 +2,10 @@
  * Keystone Correction API client for Capacitor (web context).
  * Converts base64 image strings to Blob before uploading.
  *
- * UPDATE API_URL to your server's local IP address before building.
- * - Same-machine browser dev: 'http://localhost:8000'
- * - iOS/Android device on same WiFi: 'http://<your-machine-ip>:8000'
+ * API_URL is auto-injected at build time from .env (VITE_API_URL).
+ * Run `npm run build` — the prebuild script sets it to the current machine's IP.
  */
-const API_URL = 'http://10.9.131.86:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function base64ToBlob(base64, mimeType = 'image/jpeg') {
   const byteString = atob(base64);
