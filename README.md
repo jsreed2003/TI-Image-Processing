@@ -1,5 +1,7 @@
 # FastAPI Backend for Keystone Correction
 
+This project was created by Karrie Butcher, William Miller, Marc Pham and Jackson Scott Reed
+
 REST API server that processes projector images and returns corner detection results.
 
 ## 🚀 Quick Start
